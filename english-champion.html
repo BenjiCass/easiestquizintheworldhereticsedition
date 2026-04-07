@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Champion — Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9941A;
+    --gold-light: #F5D98B;
+    --gold-dark: #8A6010;
+    --gold-bg: #2A1F08;
+    --charcoal: #1A1A18;
+    --charcoal-2: #252523;
+    --charcoal-3: #2E2E2C;
+    --charcoal-4: #3A3A38;
+    --off-white: #F0EDE6;
+    --muted: #888880;
+    --muted-light: #AEADA6;
+    --player-1: #C9941A;
+    --player-2: #5B5B8A;
+    --player-3: #4A7C6F;
+    --p1-light: #F5D98B;
+    --p2-light: #BCBCE0;
+    --p3-light: #9ECFC4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--charcoal);
+    color: var(--off-white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BACKGROUND TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 60px,
+        rgba(201,148,26,0.03) 60px,
+        rgba(201,148,26,0.03) 61px
+      );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 2.5rem; }
+  .header-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+  .header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 72px);
+    color: var(--off-white);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
+  }
+  .header h1 span { color: var(--gold); }
+  .week-pill {
+    display: inline-block;
+    background: var(--gold-bg);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold-light);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 16px;
+    border-radius: 100px;
+    margin-top: 1rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* PODIUM CARDS */
+  .podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
+
+  .player-card {
+    background: var(--charcoal-2);
+    border: 1px solid var(--charcoal-4);
+    border-radius: 16px;
+    padding: 1.25rem 0.75rem 1rem;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .player-card.leader {
+    border-color: var(--gold);
+    background: linear-gradient(160deg, #2A2310 0%, var(--charcoal-2) 60%);
+  }
+  .player-card.leader::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    box-shadow: 0 0 24px rgba(201,148,26,0.12);
+    pointer-events: none;
+  }
+
+  .rank-label {
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .rank-1-badge { background: var(--gold); color: #1A1000; }
+  .rank-2-badge { background: var(--charcoal-4); color: var(--muted-light); }
+  .rank-3-badge { background: #2E2E44; color: #BCBCE0; }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    margin: 14px auto 10px;
+    letter-spacing: 0.05em;
+  }
+  .av-p1 { background: rgba(201,148,26,0.18); color: var(--gold-light); border: 1px solid rgba(201,148,26,0.4); }
+  .av-p2 { background: rgba(91,91,138,0.25); color: var(--p2-light); border: 1px solid rgba(91,91,138,0.4); }
+  .av-p3 { background: rgba(74,124,111,0.25); color: var(--p3-light); border: 1px solid rgba(74,124,111,0.4); }
+
+  .player-name { font-size: 14px; font-weight: 600; color: var(--off-white); margin-bottom: 8px; min-height: 21px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .player-total { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--off-white); line-height: 1; }
+  .player-total-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+  .player-week-pts {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--gold-light);
+    background: rgba(201,148,26,0.1);
+    border-radius: 8px;
+    padding: 3px 0;
+    min-height: 22px;
+  }
+  .player-week-pts.zero { background: transparent; color: var(--muted); }
+
+  /* DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.5rem 0;
+    color: var(--charcoal-4);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--charcoal-4); }
+
+  /* PANEL */
+  .panel {
+    background: var(--charcoal-2);
+    border: 1px solid var(--charcoal-4);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .panel-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* NAME EDITOR */
+  .name-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+  .field-label { font-size: 11px; color: var(--muted-light); font-weight: 500; }
+
+  input[type="text"], input[type="number"] {
+    background: var(--charcoal-3);
+    border: 1px solid var(--charcoal-4);
+    color: var(--off-white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 10px;
+    border-radius: 10px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus, input[type="number"]:focus { border-color: var(--gold); }
+  input[type="number"] { text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.05em; }
+  input::placeholder { color: var(--charcoal-4); }
+
+  /* POINTS GRID */
+  .pts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 1rem; }
+  .pts-player-label { font-size: 12px; font-weight: 600; color: var(--muted-light); margin-bottom: 4px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* BUTTONS */
+  .btn-primary {
+    width: 100%;
+    background: var(--gold);
+    color: #1A1000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.1em;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .btn-ghost {
+    width: 100%;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    border: 1px solid var(--charcoal-4);
+    border-radius: 10px;
+    padding: 8px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-ghost:hover { color: var(--off-white); border-color: var(--muted); }
+
+  /* HISTORY */
+  .history-list { max-height: 200px; overflow-y: auto; }
+  .history-list::-webkit-scrollbar { width: 4px; }
+  .history-list::-webkit-scrollbar-track { background: transparent; }
+  .history-list::-webkit-scrollbar-thumb { background: var(--charcoal-4); border-radius: 4px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--charcoal-3);
+    font-size: 13px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-week { font-weight: 600; color: var(--gold); font-size: 12px; letter-spacing: 0.08em; min-width: 56px; }
+  .history-entries { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; justify-content: flex-end; }
+  .history-chip {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-weight: 600;
+  }
+  .chip-p1 { background: rgba(201,148,26,0.15); color: var(--gold-light); }
+  .chip-p2 { background: rgba(91,91,138,0.2); color: var(--p2-light); }
+  .chip-p3 { background: rgba(74,124,111,0.2); color: var(--p3-light); }
+
+  .empty-state { font-size: 13px; color: var(--muted); font-style: italic; text-align: center; padding: 1rem 0; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--gold);
+    color: #1A1000;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 24px;
+    border-radius: 100px;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* FOOTER */
+  .footer { text-align: center; margin-top: 2.5rem; font-size: 11px; color: var(--charcoal-4); letter-spacing: 0.1em; }
+
+  /* ANIMATIONS */
+  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+  .pop { animation: pop 0.35s ease; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-eyebrow">Season 1 &nbsp;·&nbsp; Team Heretics</div>
+    <h1>English<br><span>Champion</span></h1>
+    <div class="week-pill" id="week-pill">Week 1</div>
+  </div>
+
+  <div class="podium" id="podium"></div>
+
+  <div class="divider">Admin panel</div>
+
+  <div class="panel">
+    <div class="panel-title">Player names</div>
+    <div class="name-grid">
+      <div class="field-wrap">
+        <span class="field-label">Player 1</span>
+        <input type="text" id="name0" placeholder="Choose a name" maxlength="18" oninput="updateNames()">
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">Player 2</span>
+        <input type="text" id="name1" placeholder="Choose a name" maxlength="18" oninput="updateNames()">
+      </div>
+      <div class="field-wrap">
+        <span class="field-label">Player 3</span>
+        <input type="text" id="name2" placeholder="Choose a name" maxlength="18" oninput="updateNames()">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Add points — <span id="add-week-label">Week 1</span></div>
+    <div class="pts-grid">
+      <div>
+        <div class="pts-player-label" id="pts-name-0">Player 1</div>
+        <input type="number" id="pts0" placeholder="0" min="0">
+      </div>
+      <div>
+        <div class="pts-player-label" id="pts-name-1">Player 2</div>
+        <input type="number" id="pts1" placeholder="0" min="0">
+      </div>
+      <div>
+        <div class="pts-player-label" id="pts-name-2">Player 3</div>
+        <input type="number" id="pts2" placeholder="0" min="0">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addWeek()">&#9650; Add this week's points</button>
+    <button class="btn-ghost" onclick="undoLast()">Undo last round</button>
+    <button class="btn-ghost" onclick="resetAll()">Reset everything</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Round history</div>
+    <div class="history-list" id="history-list">
+      <div class="empty-state">No rounds logged yet.</div>
+    </div>
+  </div>
+
+  <div class="footer">English Champion &nbsp;·&nbsp; Powered by curiosity ☕</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CHIP_CLASSES = ['chip-p1','chip-p2','chip-p3'];
+const AV_CLASSES = ['av-p1','av-p2','av-p3'];
+const RANK_BADGE_CLASSES = ['rank-1-badge','rank-2-badge','rank-3-badge'];
+const RANK_LABELS = ['1ST','2ND','3RD'];
+
+let state = {
+  names: ['','',''],
+  scores: [0,0,0],
+  weekScores: [0,0,0],
+  week: 1,
+  history: []
+};
+
+function save() {
+  try { localStorage.setItem('ec_v2', JSON.stringify(state)); } catch(e){}
+}
+
+function load() {
+  try {
+    const d = localStorage.getItem('ec_v2');
+    if (d) state = JSON.parse(d);
+  } catch(e){}
+}
+
+function initInputs() {
+  state.names.forEach((n,i) => {
+    document.getElementById('name'+i).value = n;
+  });
+  updatePtsLabels();
+}
+
+function updateNames() {
+  state.names = [0,1,2].map(i => document.getElementById('name'+i).value.trim());
+  updatePtsLabels();
+  renderPodium();
+  save();
+}
+
+function updatePtsLabels() {
+  state.names.forEach((n,i) => {
+    document.getElementById('pts-name-'+i).textContent = n || 'Player '+(i+1);
+  });
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  const p = name.trim().split(' ').filter(Boolean);
+  if (p.length >= 2) return (p[0][0]+p[1][0]).toUpperCase();
+  return name.slice(0,2).toUpperCase();
+}
+
+function getRanked() {
+  return [0,1,2].map(i => ({i, score: state.scores[i], weekScore: state.weekScores[i]}))
+    .sort((a,b) => b.score - a.score);
+}
+
+function renderPodium() {
+  const ranked = getRanked();
+  document.getElementById('podium').innerHTML = ranked.map((p, rank) => {
+    const name = state.names[p.i] || 'Player '+(p.i+1);
+    const isLeader = rank === 0;
+    const weekPts = p.weekScore;
+    const weekLabel = weekPts > 0
+      ? '+' + weekPts + ' this week'
+      : state.week > 1 ? '&mdash;' : '';
+    return `<div class="player-card${isLeader && p.score > 0 ? ' leader' : ''}">
+      <span class="rank-label ${RANK_BADGE_CLASSES[rank]}">${RANK_LABELS[rank]}</span>
+      <div class="avatar ${AV_CLASSES[p.i]}">${getInitials(name)}</div>
+      <div class="player-name">${name}</div>
+      <div class="player-total">${p.score}</div>
+      <div class="player-total-label">pts total</div>
+      <div class="player-week-pts ${weekPts === 0 ? 'zero' : ''}">${weekLabel}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!state.history.length) {
+    list.innerHTML = '<div class="empty-state">No rounds logged yet.</div>';
+    return;
+  }
+  list.innerHTML = [...state.history].reverse().map(h => {
+    const chips = h.added.map((pts,i) => {
+      if (!pts) return '';
+      const n = h.names[i] || 'P'+(i+1);
+      return `<span class="history-chip ${CHIP_CLASSES[i]}">${n} +${pts}</span>`;
+    }).filter(Boolean).join('');
+    return `<div class="history-item">
+      <span class="history-week">WK ${h.week}</span>
+      <div class="history-entries">${chips || '<span style="color:var(--muted);font-size:11px;">no points</span>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function updateWeekUI() {
+  const w = 'Week ' + state.week;
+  document.getElementById('week-pill').textContent = w;
+  document.getElementById('add-week-label').textContent = w;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function addWeek() {
+  const pts = [0,1,2].map(i => Math.max(0, parseInt(document.getElementById('pts'+i).value) || 0));
+  if (!pts.some(p => p > 0)) { showToast('Enter at least one score'); return; }
+
+  state.history.push({ week: state.week, names: [...state.names], added: [...pts] });
+  pts.forEach((p,i) => { state.scores[i] += p; });
+  state.weekScores = [...pts];
+  state.week += 1;
+
+  [0,1,2].forEach(i => { document.getElementById('pts'+i).value = ''; });
+
+  renderPodium();
+  renderHistory();
+  updateWeekUI();
+  save();
+  showToast('Week ' + (state.week - 1) + ' points added');
+}
+
+function undoLast() {
+  if (!state.history.length) { showToast('Nothing to undo'); return; }
+  if (!confirm('Undo last round?')) return;
+  const last = state.history.pop();
+  last.added.forEach((p,i) => { state.scores[i] -= p; state.scores[i] = Math.max(0, state.scores[i]); });
+  state.week -= 1;
+  state.weekScores = state.history.length ? state.history[state.history.length-1].added : [0,0,0];
+  renderPodium();
+  renderHistory();
+  updateWeekUI();
+  save();
+  showToast('Last round undone');
+}
+
+function resetAll() {
+  if (!confirm('Reset all scores and history? Names will be kept.')) return;
+  state.scores = [0,0,0];
+  state.weekScores = [0,0,0];
+  state.week = 1;
+  state.history = [];
+  renderPodium();
+  renderHistory();
+  updateWeekUI();
+  save();
+  showToast('Scores reset');
+}
+
+load();
+initInputs();
+renderPodium();
+renderHistory();
+updateWeekUI();
+</script>
+</body>
+</html>
